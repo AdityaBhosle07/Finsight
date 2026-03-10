@@ -25,8 +25,8 @@ Built with: **FastAPI** | **ChromaDB** | **Anthropic Claude** | **Sentence Trans
 
 ### 1. Clone and enter project
 ```bash
-git clone <your-repo-url>
-cd finsight
+git clone https://github.com/AdityaBhosle07/Finsight.git
+cd Finsight
 ```
 
 ### 2. Create virtual environment
@@ -40,10 +40,16 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Set your Anthropic API key
+### 4. Install and start Ollama (free local LLM — no API key needed)
 ```bash
-export ANTHROPIC_API_KEY=your_api_key_here
-# Windows: set ANTHROPIC_API_KEY=your_api_key_here
+# Install Ollama
+brew install ollama
+
+# Start Ollama server (keep this terminal open)
+ollama serve
+
+# In a new terminal, pull the model (~2GB, one time only)
+ollama pull llama3.2
 ```
 
 ### 5. Start the backend
