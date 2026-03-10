@@ -7,6 +7,12 @@ Built with: **FastAPI** | **ChromaDB** | **Anthropic Claude** | **Sentence Trans
 
 ---
 
+## Who This Is Built For
+
+Companies like **Ramp, Brex, Stripe, Goldman Sachs, BlackRock, and JPMorgan** deal with massive volumes of financial documents — earnings reports, SEC filings, transaction records, risk assessments, and regulatory filings. FinSight demonstrates the core RAG architecture that powers internal knowledge assistants at these firms: document ingestion, semantic retrieval, grounded LLM responses, and hallucination reduction.
+
+If you are building AI infrastructure for fintech, this is the pattern.
+
 ## What This Demonstrates
 
 | Feature | Description |
