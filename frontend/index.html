@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinSight — Financial Intelligence Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #1a1d24;
+      --border: #2a2d35;
+      --accent: #00d4aa;
+      --accent2: #ff6b35;
+      --warn: #f59e0b;
+      --text: #e8eaf0;
+      --muted: #6b7280;
+      --green: #10b981;
+      --red: #ef4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* Header */
+    header {
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-mark {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), #0099aa);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 18px; color: #000;
+    }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--accent); }
+    .tagline { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; }
+    .status-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px;
+      border: 1px solid var(--border);
+      font-size: 12px; font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Layout */
+    .main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+
+    /* Sidebar */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 13px;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 16px;
+    }
+
+    /* Upload */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px; padding: 24px;
+      text-align: center; cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover { border-color: var(--accent); background: rgba(0,212,170,0.04); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-icon { font-size: 28px; margin-bottom: 8px; }
+    .upload-text { font-size: 13px; color: var(--muted); }
+    .upload-text strong { color: var(--accent); display: block; margin-bottom: 2px; }
+
+    .btn {
+      width: 100%; padding: 10px 16px;
+      border-radius: 8px; border: none;
+      font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #000; margin-top: 12px; }
+    .btn-primary:hover { background: #00bfa3; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border); margin-top: 8px;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text); }
+
+    textarea.text-input {
+      width: 100%; min-height: 100px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px;
+      color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      resize: vertical; outline: none;
+    }
+    textarea.text-input:focus { border-color: var(--accent); }
+
+    .input-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .input-label { font-size: 12px; color: var(--muted); }
+    input.text-field {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px;
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
+      outline: none; width: 100%;
+    }
+    input.text-field:focus { border-color: var(--accent); }
+
+    /* Stats */
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: 12px; color: var(--muted); }
+    .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+
+    /* Sample questions */
+    .sample-q {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px; font-size: 12px;
+      color: var(--muted); cursor: pointer;
+      transition: all 0.2s; margin-bottom: 6px;
+      text-align: left; background: transparent; width: 100%;
+    }
+    .sample-q:hover { border-color: var(--accent); color: var(--text); }
+
+    /* Main content */
+    .main-content { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Query panel */
+    .query-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .query-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .query-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; }
+    .mode-toggle { display: flex; gap: 8px; }
+    .mode-btn {
+      padding: 6px 14px; border-radius: 20px;
+      border: 1px solid var(--border);
+      font-size: 12px; cursor: pointer; transition: all 0.2s;
+      background: transparent; color: var(--muted);
+    }
+    .mode-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .query-input-wrap { position: relative; }
+    textarea.query-textarea {
+      width: 100%; min-height: 80px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px;
+      resize: none; outline: none; line-height: 1.5;
+    }
+    textarea.query-textarea:focus { border-color: var(--accent); }
+    textarea.query-textarea::placeholder { color: var(--muted); }
+
+    .query-actions { display: flex; gap: 10px; margin-top: 12px; }
+    .btn-ask {
+      padding: 10px 24px; border-radius: 8px;
+      background: var(--accent); color: #000;
+      border: none; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-ask:hover { background: #00bfa3; }
+    .btn-ask:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-compare {
+      padding: 10px 24px; border-radius: 8px;
+      background: transparent; color: var(--accent2);
+      border: 1px solid var(--accent2);
+      font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-compare:hover { background: rgba(255,107,53,0.1); }
+    .btn-compare:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Response */
+    .response-area { display: flex; flex-direction: column; gap: 16px; }
+    .response-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .response-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .response-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .badge {
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-family: 'JetBrains Mono', monospace;
+      font-weight: 600; letter-spacing: 0.5px;
+    }
+    .badge-rag { background: rgba(0,212,170,0.15); color: var(--accent); }
+    .badge-norag { background: rgba(239,68,68,0.15); color: var(--red); }
+    .response-body { padding: 20px; }
+    .response-text { font-size: 14px; line-height: 1.7; color: var(--text); white-space: pre-wrap; }
+
+    /* Grounding meter */
+    .grounding-wrap { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .grounding-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .grounding-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .grounding-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+
+    /* Sources */
+    .sources-wrap { margin-top: 16px; }
+    .sources-title { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .source-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 6px;
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+      color: var(--muted); margin: 0 4px 4px 0;
+    }
+    .source-relevance { color: var(--accent); }
+
+    /* Hallucination warning */
+    .halluc-warn {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 16px;
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; margin-top: 12px;
+      font-size: 12px; color: #fca5a5; line-height: 1.5;
+    }
+
+    /* Loading */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,212,170,0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 12px 20px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: 13px; z-index: 999;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--accent); color: var(--accent); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state p { font-size: 14px; line-height: 1.6; }
+
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .mode-toggle { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-mark">F</div>
+        <div>
+          <div class="logo-text">Fin<span>Sight</span></div>
+          <div class="tagline">RAG-POWERED FINANCIAL INTELLIGENCE</div>
+        </div>
+      </div>
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        <span id="statusText">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Upload PDF -->
+      <div class="card">
+        <div class="card-title">Upload Document</div>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="pdfInput" accept=".pdf" />
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">
+            <strong>Drop PDF here or click to browse</strong>
+            SEC filings, earnings reports, 10-K, 10-Q
+          </div>
+        </div>
+        <div id="uploadFileName" style="font-size:12px;color:var(--accent);margin-top:8px;display:none;"></div>
+        <button class="btn btn-primary" id="uploadBtn" disabled>Ingest Document</button>
+      </div>
+
+      <!-- Paste Text -->
+      <div class="card">
+        <div class="card-title">Paste Financial Text</div>
+        <div class="input-row">
+          <div class="input-label">Source name</div>
+          <input type="text" class="text-field" id="textSourceName" placeholder="e.g. Apple 10-K 2024" />
+        </div>
+        <textarea class="text-input" id="pasteText" placeholder="Paste earnings transcript, press release, or any financial text..."></textarea>
+        <button class="btn btn-primary" id="ingestTextBtn">Ingest Text</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="card">
+        <div class="card-title">Vector DB Stats</div>
+        <div class="stat-row">
+          <span class="stat-label">Chunks indexed</span>
+          <span class="stat-value" id="chunkCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Embedding model</span>
+          <span class="stat-value">MiniLM-L6</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Vector store</span>
+          <span class="stat-value">ChromaDB</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">LLM</span>
+          <span class="stat-value">Claude 3.5</span>
+        </div>
+        <button class="btn btn-ghost" id="resetBtn">Clear Database</button>
+      </div>
+
+      <!-- Sample Questions -->
+      <div class="card">
+        <div class="card-title">Sample Questions</div>
+        <button class="sample-q" onclick="setQuestion('What was the total revenue reported?')">What was the total revenue reported?</button>
+        <button class="sample-q" onclick="setQuestion('What are the key risk factors mentioned?')">What are the key risk factors mentioned?</button>
+        <button class="sample-q" onclick="setQuestion('What is the company guidance for next quarter?')">What is the company guidance for next quarter?</button>
+        <button class="sample-q" onclick="setQuestion('How did operating expenses change year over year?')">How did operating expenses change YoY?</button>
+        <button class="sample-q" onclick="setQuestion('What did management say about AI investments?')">What did management say about AI investments?</button>
+      </div>
+
+    </div>
+
+    <!-- Main -->
+    <div class="main-content">
+      <div class="query-panel">
+        <div class="query-header">
+          <div class="query-title">Ask FinSight</div>
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="modeRAG" onclick="setMode('rag')">RAG Mode</button>
+            <button class="mode-btn" id="modeRaw" onclick="setMode('raw')">Raw LLM</button>
+          </div>
+        </div>
+        <textarea class="query-textarea" id="questionInput" placeholder="Ask a question about your financial documents..."></textarea>
+        <div class="query-actions">
+          <button class="btn-ask" id="askBtn" onclick="askQuestion()">
+            <span id="askBtnText">Ask</span>
+            <span id="askSpinner" class="spinner" style="display:none;"></span>
+          </button>
+          <button class="btn-compare" id="compareBtn" onclick="compareMode()">
+            Compare RAG vs No-RAG
+          </button>
+        </div>
+      </div>
+
+      <div class="response-area" id="responseArea">
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <p>Upload a financial document and ask a question.<br/>FinSight will ground its answer in your documents<br/>and show you the sources behind every claim.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:8000';
+  let currentMode = 'rag';
+  let selectedFile = null;
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    try {
+      const res = await fetch(`${API}/health`);
+      const data = await res.json();
+      document.getElementById('statusText').textContent = 'API Connected';
+      document.querySelector('.status-dot').style.background = 'var(--green)';
+      updateStats(data.vector_db);
+    } catch {
+      document.getElementById('statusText').textContent = 'API Offline';
+      document.querySelector('.status-dot').style.background = 'var(--red)';
+    }
+  }
+
+  async function refreshStats() {
+    try {
+      const res = await fetch(`${API}/stats`);
+      const data = await res.json();
+      updateStats(data);
+    } catch {}
+  }
+
+  function updateStats(data) {
+    document.getElementById('chunkCount').textContent = data.total_chunks || 0;
+  }
+
+  // ── File Upload ───────────────────────────────────────────────────────────
+  document.getElementById('pdfInput').addEventListener('change', (e) => {
+    selectedFile = e.target.files[0];
+    if (selectedFile) {
+      document.getElementById('uploadFileName').textContent = '📎 ' + selectedFile.name;
+      document.getElementById('uploadFileName').style.display = 'block';
+      document.getElementById('uploadBtn').disabled = false;
+    }
+  });
+
+  document.getElementById('uploadBtn').addEventListener('click', async () => {
+    if (!selectedFile) return;
+    const btn = document.getElementById('uploadBtn');
+    btn.textContent = 'Ingesting...'; btn.disabled = true;
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    try {
+      const res = await fetch(`${API}/ingest/pdf`, { method: 'POST', body: formData });
+      const data = await res.json();
+      showToast(`Ingested ${data.chunks_created} chunks from ${data.document_name}`, 'success');
+      refreshStats();
+    } catch (e) {
+      showToast('Upload failed. Is the backend running?', 'error');
+    }
+    btn.textContent = 'Ingest Document'; btn.disabled = false;
+  });
+
+  // ── Text Ingest ───────────────────────────────────────────────────────────
+  document.getElementById('ingestTextBtn').addEventListener('click', async () => {
+    const text = document.getElementById('pasteText').value.trim();
+    const name = document.getElementById('textSourceName').value.trim() || 'Pasted Document';
+    if (!text) { showToast('Please paste some text first', 'error'); return; }
+    const btn = document.getElementById('ingestTextBtn');
+    btn.textContent = 'Ingesting...'; btn.disabled = true;
+    try {
+      const res = await fetch(`${API}/ingest/text`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, source_name: name })
+      });
+      const data = await res.json();
+      showToast(`Ingested ${data.chunks_created} chunks from "${name}"`, 'success');
+      document.getElementById('pasteText').value = '';
+      refreshStats();
+    } catch {
+      showToast('Ingestion failed', 'error');
+    }
+    btn.textContent = 'Ingest Text'; btn.disabled = false;
+  });
+
+  // ── Reset ─────────────────────────────────────────────────────────────────
+  document.getElementById('resetBtn').addEventListener('click', async () => {
+    if (!confirm('Clear all ingested documents?')) return;
+    await fetch(`${API}/reset`, { method: 'DELETE' });
+    showToast('Database cleared', 'success');
+    refreshStats();
+    document.getElementById('responseArea').innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>Database cleared. Upload a new document to get started.</p></div>`;
+  });
+
+  // ── Mode Toggle ───────────────────────────────────────────────────────────
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('modeRAG').classList.toggle('active', mode === 'rag');
+    document.getElementById('modeRaw').classList.toggle('active', mode === 'raw');
+  }
+
+  function setQuestion(q) {
+    document.getElementById('questionInput').value = q;
+  }
+
+  // ── Ask Question ──────────────────────────────────────────────────────────
+  async function askQuestion() {
+    const question = document.getElementById('questionInput').value.trim();
+    if (!question) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, use_rag: currentMode === 'rag', top_k: 4 })
+      });
+      const data = await res.json();
+      renderSingleResponse(data, question);
+    } catch {
+      showToast('Query failed. Is the backend running?', 'error');
+    }
+    setLoading(false);
+  }
+
+  // ── Compare Mode ──────────────────────────────────────────────────────────
+  async function compareMode() {
+    const question = document.getElementById('questionInput').value.trim();
+    if (!question) { showToast('Enter a question first', 'error'); return; }
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/compare`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, top_k: 4 })
+      });
+      const data = await res.json();
+      renderComparison(data);
+    } catch {
+      showToast('Compare failed. Is the backend running?', 'error');
+    }
+    setLoading(false);
+  }
+
+  // ── Render Functions ──────────────────────────────────────────────────────
+  function renderSingleResponse(data, question) {
+    const area = document.getElementById('responseArea');
+    area.innerHTML = `
+      <div class="response-card">
+        <div class="response-header">
+          <div class="response-label">
+            ${data.use_rag ? '<span class="badge badge-rag">RAG GROUNDED</span>' : '<span class="badge badge-norag">RAW LLM</span>'}
+            Response
+          </div>
+          <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">${data.chunks_retrieved} chunks retrieved</div>
+        </div>
+        <div class="response-body">
+          <div class="response-text">${escapeHtml(data.answer)}</div>
+          ${data.grounding_score !== null && data.grounding_score !== undefined ? renderGrounding(data.grounding_score) : ''}
+          ${data.sources && data.sources.length > 0 ? renderSources(data.sources) : ''}
+          ${!data.use_rag ? `<div class="halluc-warn">⚠️ <span><strong>Hallucination Risk:</strong> This response uses only training data. Specific figures, dates, and names may be fabricated. Always verify against source documents.</span></div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function renderComparison(data) {
+    const area = document.getElementById('responseArea');
+    const rag = data.rag_response;
+    const raw = data.non_rag_response;
+    area.innerHTML = `
+      <div style="padding:12px 0;font-size:13px;color:var(--muted);">
+        Comparing responses for: <strong style="color:var(--text)">"${escapeHtml(data.question)}"</strong>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="response-card">
+          <div class="response-header">
+            <div class="response-label"><span class="badge badge-rag">RAG GROUNDED</span> With Context</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">${rag.chunks_retrieved} chunks</div>
+          </div>
+          <div class="response-body">
+            <div class="response-text">${escapeHtml(rag.answer)}</div>
+            ${rag.grounding_score !== null ? renderGrounding(rag.grounding_score) : ''}
+            ${rag.sources && rag.sources.length > 0 ? renderSources(rag.sources) : ''}
+          </div>
+        </div>
+        <div class="response-card" style="border-color:rgba(239,68,68,0.3)">
+          <div class="response-header">
+            <div class="response-label"><span class="badge badge-norag">NO RAG</span> Training Data Only</div>
+          </div>
+          <div class="response-body">
+            <div class="response-text">${escapeHtml(raw.answer)}</div>
+            <div class="halluc-warn">⚠️ <span><strong>Hallucination Risk:</strong> No document context. Specific figures may be fabricated from training data.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:4px">
+        <div class="card-title">Grounding Analysis</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">
+          The RAG response is grounded in <strong style="color:var(--accent)">${rag.chunks_retrieved} retrieved chunks</strong> from your documents with a grounding score of 
+          <strong style="color:var(--accent)">${Math.round((rag.grounding_score || 0) * 100)}%</strong>. 
+          The non-RAG response relies entirely on training data and cannot cite sources, making it susceptible to hallucination on specific financial figures, dates, and company-specific metrics.
+        </p>
+      </div>`;
+  }
+
+  function renderGrounding(score) {
+    const pct = Math.round(score * 100);
+    const color = pct > 70 ? 'var(--green)' : pct > 40 ? 'var(--warn)' : 'var(--red)';
+    return `<div class="grounding-wrap">
+      <div class="grounding-label">
+        <span>Grounding Score</span>
+        <span style="color:${color}">${pct}%</span>
+      </div>
+      <div class="grounding-bar">
+        <div class="grounding-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+    </div>`;
+  }
+
+  function renderSources(sources) {
+    return `<div class="sources-wrap">
+      <div class="sources-title">Sources Used</div>
+      ${sources.map(s => `<span class="source-chip">📄 ${escapeHtml(s.source)} <span class="source-relevance">${Math.round(s.relevance_score * 100)}%</span></span>`).join('')}
+    </div>`;
+  }
+
+  // ── Utils ─────────────────────────────────────────────────────────────────
+  function setLoading(loading) {
+    document.getElementById('askBtn').disabled = loading;
+    document.getElementById('compareBtn').disabled = loading;
+    document.getElementById('askBtnText').textContent = loading ? 'Thinking...' : 'Ask';
+    document.getElementById('askSpinner').style.display = loading ? 'inline-block' : 'none';
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Enter to submit
+  document.getElementById('questionInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askQuestion(); }
+  });
+
+  init();
+  setInterval(refreshStats, 10000);
+</script>
+</body>
+</html>
