@@ -3,7 +3,7 @@
 > Ask questions about SEC filings, earnings reports, and financial documents.
 > See how RAG eliminates hallucinations compared to raw LLM responses.
 
-Built with: **FastAPI** | **ChromaDB** | **Anthropic Claude** | **Sentence Transformers** | **LangChain**
+Built with: **FastAPI** | **ChromaDB** | **Llama 3.2 (Ollama)** | **Sentence Transformers** | **LangChain**
 
 ---
 
